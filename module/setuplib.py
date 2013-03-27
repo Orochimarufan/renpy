@@ -1,7 +1,7 @@
 # This file encapsulates much of the complexity of the Ren'Py build process,
 # so setup.py can be clean by comparison.
 
-from __future__ import print_function, unicode_literals
+from __future__ import print_function
 
 import os
 import sys
