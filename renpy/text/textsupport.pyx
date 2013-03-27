@@ -1,5 +1,9 @@
 include "linebreak.pxi"
 
+import sys
+if sys.version_info >= (3,):
+    unichr = chr
+
 cdef class Glyph:
     
     def __repr__(self):

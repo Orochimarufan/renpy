@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function, unicode_literals
+
 import platform
 import sys
 import os
@@ -57,11 +59,11 @@ cython(
     [ "IMG_savepng.c", "core.c", "rwobject.c", "subpixel.c"],
     sdl + [ 'png', 'z', 'm' ])
 
-cmodule(
-    "_renpy_font",
-    [ "renpy_ttf.c", "renpy_font.c"],
-    sdl + [ 'freetype', 'z', 'm' ],
-    )
+#cmodule(
+#    "_renpy_font",
+#    [ "renpy_ttf.c", "renpy_font.c"],
+#    sdl + [ 'freetype', 'z', 'm' ],
+#    )
 
 if has_fribidi and not android:
     cython(
@@ -150,4 +152,5 @@ import renpy
 setuplib.setup("Ren'Py", renpy.version[7:])
 
 if not has_fribidi:
-    print "Warning: Did not include fribidi."
+    print("Warning: Did not include fribidi.")
+

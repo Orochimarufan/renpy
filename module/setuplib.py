@@ -1,11 +1,47 @@
 # This file encapsulates much of the complexity of the Ren'Py build process,
 # so setup.py can be clean by comparison.
 
+from __future__ import print_function, unicode_literals
+
 import os
 import sys
 import re
 
 import distutils.core
+
+
+# Py3K compatibility by Orochimarufan
+if sys.version_info >= (3,):
+    unicode_type = str
+    byte_type = bytes
+else:
+    unicode_type = unicode
+    byte_type = str
+
+def u(s):
+    """ ensure an unicode-string """
+    if isinstance(s, unicode_type):
+        return s
+    elif isinstance(s, byte_type):
+        try:
+            return s.decode("utf-8")
+        except UnicodeDecodeError:
+            return s.decode("Latin-1")
+    else:
+        return unicode_type(s)
+
+def b(s):
+    """ ensure a byte-string """
+    if isinstance(s, byte_type):
+        return s
+    elif isinstance(s, unicode_type):
+        try:
+            return s.encode("utf-8")
+        except UnicodeEncodeError:
+            return s.encode("Latin-1")
+    else:
+        return byte_type(s)
+
 
 # This flag determines if we are compiling for Android or not.
 android = "RENPY_ANDROID" in os.environ
@@ -29,6 +65,13 @@ else:
 # The include and library dirs that we compile against.
 include_dirs = [ "." ]
 library_dirs = [ ]
+
+# include sysconfig includes, should fix virtualenv builds on 3.2+ and 2.7+
+try:
+    import sysconfig
+    include_dirs.append(sysconfig.get_path("include"))
+except ImportError:
+    pass
 
 # Extra arguments that will be given to the compiler.
 extra_compile_args = [ ]
@@ -68,9 +111,9 @@ def include(header, directory=None, optional=True):
         return False
     
     if directory is None:
-        print "Could not find required header {0}.".format(header)
+        print("Could not find required header {0}.".format(header))
     else:
-        print "Could not find required header {0}/{1}.".format(directory, header)
+        print("Could not find required header {0}/{1}.".format(directory, header))
 
     sys.exit(-1)
     
@@ -105,7 +148,7 @@ def library(name, optional=False):
     if optional:
         return False
     
-    print "Could not find required library {0}.".format(name)
+    print("Could not find required library {0}.".format(name))
     sys.exit(-1)
 
 # A list of extension objects that we use.
@@ -147,7 +190,7 @@ def cython(name, source=[], libs=[], compile_if=True, define_macros=[]):
     elif os.path.exists(fn):
         pass
     else:
-        print "Could not find {0}.".format(fn)
+        print("Could not find {0}.".format(fn))
         sys.exit(-1)
 
     module_dir = os.path.dirname(fn)
@@ -155,7 +198,7 @@ def cython(name, source=[], libs=[], compile_if=True, define_macros=[]):
     # Figure out what it depends on.
     deps = [ fn ]
 
-    f = file(fn)
+    f = open(fn)
     for l in f:
         
         m = re.search(r'from\s*([\w.]+)\s*cimport', l)
@@ -201,21 +244,21 @@ def cython(name, source=[], libs=[], compile_if=True, define_macros=[]):
         elif os.path.exists(dep_fn):
             pass
         else:
-            print "{0} depends on {1}, which can't be found.".format(fn, dep_fn)
+            print("{0} depends on {1}, which can't be found.".format(fn, dep_fn))
             sys.exit(-1)
 
         if os.path.getmtime(dep_fn) > c_mtime:
             out_of_date = True
 
     if out_of_date and not cython_command:
-        print "WARNING:", name, "is out of date, but RENPY_CYTHON isn't set."
+        print("WARNING:", name, "is out of date, but RENPY_CYTHON isn't set.")
         out_of_date = False
 
     # If the file is out of date, regenerate it.
     if out_of_date:
-        print name, "is out of date."
+        print(name, "is out of date.")
 
-        try:    
+        try:
             import subprocess            
             subprocess.check_call([
                 cython_command,
@@ -225,10 +268,10 @@ def cython(name, source=[], libs=[], compile_if=True, define_macros=[]):
                 "-o",
                 c_fn])
 
-        except subprocess.CalledProcessError, e:
-            print
-            print str(e)
-            print
+        except subprocess.CalledProcessError as e:
+            print()
+            print(str(e))
+            print()
             sys.exit(-1)
             
     # Build the module normally once we have the c file.
@@ -244,8 +287,8 @@ def find_unnecessary_gen():
         if i in necessary_gen:
             continue
         
-        print "Unnecessary file", os.path.join("gen", i)
-    
+        print("Unnecessary file", os.path.join("gen", i))
+
 
 py_modules = [ ]
 
@@ -267,16 +310,16 @@ def copyfile(source, dest, replace=None, replace_with=None):
     sfn = os.path.join("..", source)
     dfn = os.path.join("..", dest)
     
-    sf = file(sfn, "rb")
+    sf = open(sfn, "rb")
     data = sf.read()
     sf.close()
     
     if replace:
-        data = data.replace(replace, replace_with)
-        
-    df = file(dfn, "wb")
-    df.write("# This file was automatically generated from " + source + "\n")
-    df.write("# Modifications will be automatically overwritten.\n\n")    
+        data = data.replace(b(replace), b(replace_with))
+    
+    df = open(dfn, "wb")
+    df.write(b"# This file was automatically generated from " + b(source) + b"\n")
+    df.write(b"# Modifications will be automatically overwritten.\n\n")    
     df.write(data)
     df.close()
     
@@ -294,12 +337,8 @@ def setup(name, version):
         ext_modules = extensions,
         py_modules = py_modules,
         )
-            
+
 # Ensure the gen directory exists.
 if not os.path.exists("gen"):
     os.mkdir("gen")
 
-        
-    
-    
-        
