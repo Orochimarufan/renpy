@@ -3,8 +3,9 @@
 
 #include <Python.h>
 #include <SDL/SDL.h>
+#include <pygame/pygame.h>
 
-SDL_RWops* RWopsFromPython(PyObject* obj);
+//SDL_RWops* RWopsFromPython(PyObject* obj);
 
 void core_init(void);
 

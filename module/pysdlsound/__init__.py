@@ -1,6 +1,8 @@
+from __future__ import absolute_import
+
 import sys
 
-from sound import *
+from .sound import *
 
 try:
     import winmixer #@UnresolvedImport

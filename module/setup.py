@@ -34,8 +34,11 @@ include("libavcodec/avcodec.h")
 include("libswscale/swscale.h")
 include("GL/glew.h")
 
+# libpng version
+libpng = "png15"
+
 library("SDL")
-library("png")
+library(libpng)
 library("avformat")
 library("avcodec")
 library("avutil")
@@ -56,8 +59,9 @@ else:
 # Modules directory.
 cython(
     "_renpy", 
-    [ "IMG_savepng.c", "core.c", "rwobject.c", "subpixel.c"],
-    sdl + [ 'png', 'z', 'm' ])
+    [ "IMG_savepng.c", "core.c",# "rwobject.c", 
+    "subpixel.c"],
+    sdl + [ libpng, 'z', 'm' ])
 
 if has_fribidi and not android:
     cython(
@@ -76,7 +80,8 @@ if not android:
 
     cython(
         "pysdlsound.sound",
-        [ "pss.c", "rwobject.c", "ffdecode.c" ],
+        [ "pss.c",# "rwobject.c", 
+        "ffdecode.c" ],
         libs = sdl + sound)
 
 
